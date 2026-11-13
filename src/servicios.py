@@ -11,10 +11,10 @@ class ReservaSalas(Servicio):
         self.capacidad_personas=capacidad_personas
 # Método con parámetros opcionales para calcular el costo con impuesto
     def calcular_costo(self, horas:int = 1, impuesto: float=0.19)-> float:
-        if horas>=0:
+       f horas <= 0:
             raise ValueError("Error las horas de reservas deben ser mayor a cero.")
         subtotal= self.tarifa_base * horas
-        return subtotal + subtotal* impuesto
+       return subtotal + (subtotal * impuesto)
 # 3. Servicio especializado 2: Alquiler de equipos
 class AlquilerEquipos(Servicio):
     def __init__(self, nombre, str, tarifa_base: float, codigo_equipo: str):
