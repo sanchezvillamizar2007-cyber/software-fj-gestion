@@ -11,7 +11,7 @@ class Servicio(ABC):
     def calcular_costo(self, *args, **kwargs):
         pass
 
-# Servicio especializado 1: Reserva de salas
+# Servicio especializado 1: Reserva de salas 
 class ReservaSalas(Servicio):
     def __init__(self, nombre: str, tarifa_base: float, capacidad_personas: int, disponible: bool = True):
         super().__init__(nombre, tarifa_base, disponible)
