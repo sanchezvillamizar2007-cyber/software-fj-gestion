@@ -25,7 +25,6 @@ from src.excepciones import (
     ClienteNoEncontradoError,
 )
 
-
 class Entidad(ABC):
     """Clase abstracta que representa cualquier entidad general del sistema."""
 
@@ -50,3 +49,73 @@ class Entidad(ABC):
     def __str__(self):
         # Al imprimir la entidad se muestra su descripción
         return self.describir()
+
+class Cliente(Entidad):
+    """Cliente de Software FJ con datos personales encapsulados."""
+
+    def __init__(self, nombre, documento, correo, telefono=None):
+        # Primero se valida todo; si algo falla se lanza la excepción y el
+        # cliente no se crea (así no se gasta un id con datos inválidos).
+        self.nombre = nombre          # usa el setter de nombre
+        self.documento = documento    # usa el setter de documento
+        self.correo = correo          # usa el setter de correo
+        self.telefono = telefono      # usa el setter de teléfono (opcional)
+        # Solo si todo fue válido se asigna el id llamando a la clase padre
+        super().__init__()
+
+    # ---------- Nombre ----------
+    @property
+    def nombre(self):
+        """Devuelve el nombre del cliente."""
+        return self.__nombre  # atributo privado (name mangling)
+
+    @nombre.setter
+    def nombre(self, valor):
+        """Valida y guarda el nombre."""
+        self.__nombre = self._validar_nombre(valor)
+
+    @staticmethod
+    def _validar_nombre(valor):
+        # Debe ser texto y no estar vacío ni ser solo espacios
+        if not isinstance(valor, str) or not valor.strip():
+            raise DatosClienteInvalidosError("El nombre es obligatorio y debe ser texto.")
+        # Quita espacios sobrantes entre palabras
+        nombre = " ".join(valor.split())
+        # Debe tener al menos 3 caracteres
+        if len(nombre) < 3:
+            raise DatosClienteInvalidosError("El nombre debe tener al menos 3 caracteres.")
+        # Solo letras (con tildes y ñ) y espacios
+        if not re.fullmatch(r"[A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]+", nombre):
+            raise DatosClienteInvalidosError("El nombre solo puede contener letras y espacios.")
+        # Devuelve el nombre con la primera letra de cada palabra en mayúscula
+        return nombre.title()
+
+    # ---------- Documento ----------
+    @property
+    def documento(self):
+        """Devuelve el número de documento (texto)."""
+        return self.__documento
+
+    @documento.setter
+    def documento(self, valor):
+        """Valida y guarda el documento."""
+        self.__documento = self._validar_documento(valor)
+
+    @staticmethod
+    def _validar_documento(valor):
+        # Convierte a texto y quita espacios
+        texto = str(valor).strip()
+        try:
+            # Intenta convertir a número; si falla, se encadena la excepción
+            int(texto)
+        except ValueError as error:
+            # "from error" conserva el error original (encadenamiento)
+            raise DatosClienteInvalidosError(
+                "El documento debe contener solo números."
+            ) from error
+        # Debe tener solo dígitos y entre 6 y 12 caracteres
+        if not texto.isdigit() or not 6 <= len(texto) <= 12:
+            raise DatosClienteInvalidosError(
+                "El documento debe tener entre 6 y 12 dígitos."
+            )
+        return texto
