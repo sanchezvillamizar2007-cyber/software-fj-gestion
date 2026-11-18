@@ -119,3 +119,57 @@ class Cliente(Entidad):
                 "El documento debe tener entre 6 y 12 dígitos."
             )
         return texto
+
+    # ---------- Correo ----------
+    @property
+    def correo(self):
+        """Devuelve el correo electrónico."""
+        return self.__correo
+
+    @correo.setter
+    def correo(self, valor):
+        """Valida y guarda el correo."""
+        self.__correo = self._validar_correo(valor)
+
+    @staticmethod
+    def _validar_correo(valor):
+        # Debe ser texto
+        if not isinstance(valor, str):
+            raise DatosClienteInvalidosError("El correo debe ser texto.")
+        correo = valor.strip().lower()
+        # Formato básico: algo@dominio.ext
+        if not re.fullmatch(r"[\w.+-]+@[\w-]+(\.[\w-]+)*\.[a-z]{2,}", correo):
+            raise DatosClienteInvalidosError("El correo no tiene un formato válido.")
+        return correo
+
+    # ---------- Teléfono (opcional) ----------
+    @property
+    def telefono(self):
+        """Devuelve el teléfono o None si no se registró."""
+        return self.__telefono
+
+    @telefono.setter
+    def telefono(self, valor):
+        """Valida y guarda el teléfono (puede ser None)."""
+        self.__telefono = self._validar_telefono(valor)
+
+    @staticmethod
+    def _validar_telefono(valor):
+        # El teléfono es opcional
+        if valor is None:
+            return None
+        texto = str(valor).strip()
+        # Debe tener exactamente 10 dígitos
+        if not texto.isdigit() or len(texto) != 10:
+            raise DatosClienteInvalidosError("El teléfono debe tener 10 dígitos.")
+        return texto
+
+    # ---------- Polimorfismo ----------
+    def describir(self):
+        """Implementa el método abstracto de Entidad."""
+        telefono = self.__telefono if self.__telefono else "No registrado"
+        return (
+            f"Cliente #{self.id_entidad}: {self.__nombre} | "
+            f"Documento: {self.__documento} | Correo: {self.__correo} | "
+            f"Teléfono: {telefono}"
+        )
