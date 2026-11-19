@@ -173,3 +173,69 @@ class Cliente(Entidad):
             f"Documento: {self.__documento} | Correo: {self.__correo} | "
             f"Teléfono: {telefono}"
         )
+class GestorClientes:
+    """Administra los clientes usando una lista interna (sin base de datos)."""
+
+    def __init__(self):
+        # Lista privada: solo se modifica con los métodos de la clase
+        self.__clientes = []
+
+    def registrar_cliente(self, cliente):
+        """Agrega un cliente a la lista, evitando duplicados por documento."""
+        # Solo se aceptan objetos de tipo Cliente
+        if not isinstance(cliente, Cliente):
+            raise DatosClienteInvalidosError("Solo se pueden registrar objetos de tipo Cliente.")
+        # Recorre los clientes existentes para detectar documentos repetidos
+        for existente in self.__clientes:
+            if existente.documento == cliente.documento:
+                raise ClienteDuplicadoError("Ya existe un cliente con ese documento.")
+        # Si todo está bien, se agrega a la lista
+        self.__clientes.append(cliente)
+        return cliente
+
+    def buscar_cliente(self, documento=None, correo=None):
+        """
+        Busca por documento o por correo (parámetros opcionales: es la
+        variante 'sobrecargada' de la búsqueda).
+        """
+        # Debe indicarse al menos un criterio de búsqueda
+        if documento is None and correo is None:
+            raise DatosClienteInvalidosError("Debe indicar documento o correo para buscar.")
+        for cliente in self.__clientes:
+            if documento is not None and cliente.documento == str(documento).strip():
+                return cliente
+            if correo is not None and cliente.correo == str(correo).strip().lower():
+                return cliente
+        # Si no hubo coincidencias se lanza una excepción propia
+        raise ClienteNoEncontradoError("No se encontró un cliente con ese dato.")
+
+    def eliminar_cliente(self, documento):
+        """Elimina un cliente por su documento."""
+        cliente = self.buscar_cliente(documento=documento)
+        self.__clientes.remove(cliente)
+
+    def listar_clientes(self):
+        """Devuelve una copia de la lista (protege la lista interna)."""
+        return list(self.__clientes)
+
+
+# Pequeña demostración
+if __name__ == "__main__":
+    gestor = GestorClientes()
+    # Cada tupla: nombre, documento, correo, teléfono (algunas son inválidas a propósito)
+    pruebas = [
+        ("ana maría pérez", "1100223344", "ana@correo.com", "3001234567"),
+        ("Luis Gómez", "ABC123", "luis@correo.com", None),
+        ("", "55667788", "sin.nombre@correo.com", None),
+        ("Carlos Ruiz", "99887766", "correo-malo", None),
+        ("Ana Duplicada", "1100223344", "otra@correo.com", None),
+    ]
+    for nombre, documento, correo, telefono in pruebas:
+        try:
+            gestor.registrar_cliente(Cliente(nombre, documento, correo, telefono))
+        except Exception as error: 
+            print(f"[ERROR] {type(error).__name__}: {error}")
+        else:
+            print("[OK] Cliente registrado")
+    for cliente in gestor.listar_clientes():
+        print(cliente)
